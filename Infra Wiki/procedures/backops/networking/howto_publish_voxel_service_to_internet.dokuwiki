@@ -1,0 +1,71 @@
+====== [How-To] Publish a Voxel Service to Internet ======
+
+^  Documentation  ^|
+^Name:| How-To Publish a Voxel Service to Internet |
+^Description:| Step-by-step procedure to publish any Voxel product to Internet |
+^Modification date :|08/02/2021|
+^Owner:| fmestre |
+^Notify changes to:| fmestre |
+^Tags:| |
+^Scalate to:|Voxel's Infrastructure Team|
+
+====== Introduction ======
+
+In order to explain this how-to procedure we will use a real case example. We want to publish the below service URLs to Internet:
+
+  * https://palladium-iaf-intg.voxelgroup.net
+  * https://palladium-ilc-intg.voxelgroup.net
+  * https://palladium-ic-intg.voxelgroup.net
+
+These above URLs belong to IAF Palladium product Stack and are served by F5 BigIP Virtual Server 10.60.0.60, so we need to publish the private IP 10.60.0.60 to Internet. To accomplish this we will follow these steps:
+
+  - Choose a Voxel Public IP
+  - Configure NAT and ACL in Cisco ASA 5545X
+  - Configure Access Policy in Cisco Firepower IPS
+
+====== Choose a Voxel's Public IP ======
+
+Use GestioIP tool to choose a Voxel's Public IP from one of these two Voxel owned networks:
+
+  * 91.126.134.64/26 (for services to be published via Adamo ISP)
+  * 185.100.181.32/27 (for services to be published via MediaCloud ISP)
+
+Steps:
+
+  - Go to http://ipam.voxelgroup.net/gestioip/ and sign in
+  - Look for **91.126.134.64/26** network and click on it
+  - Inside **91.126.134.64/26** network, look for some unused public IP (with **NOY_USED** string in ''hostname'' and ''description'' column)
+  - Edit the choosen public IP address like the values shown in the table below:
+
+^    hostname     ^                      description                       ^   site   ^  category  ^    AI     ^           comment             ^  UT   ^
+| IAF-Palladium   | NAT of LTM-VS_PROD-DMZ_10.21.0.060_IAFPalladium_IAFPL  | ALL-DCs  |     NAT    | Unchecked | ----------------------------- |  dns  | 
+| :::             | :::                                                    | :::      | :::        | :::       | prova a veure si funciona\\   | :::   |
+| :::             | :::                                                    | :::      | :::        | :::       | prova a veure si funciona\\   |       |
+| :::             | :::                                                    | :::      | :::        | :::       |                               |       |
+| :::             | :::                                                    | :::      | :::        | :::       |                               |       |
+| :::             | :::                                                    | :::      | :::        | :::       |                               |       |
+| :::             | :::                                                    | :::      | :::        | :::       |                               |       |
+| :::             | :::                                                    | :::      | :::        | :::       |                               |       |
+| :::             | :::                                                    | :::      | :::        | :::       |                               |       |
+
+====== Configure NAT and ACL in Cisco ASA 5545X ======
+
+''ssh'' to the host.\\
+If sshd is not enabled, you must login into the console and start it.\\
+\\
+''postgres'' user is available and root of the database.
+\\
+
+====== Configure Cisco Firepower ======
+
+
+===== Postgres: email thing =====
+The buggy email settings can be changed in the ''accountdb'' database with:
+<code sql>
+select * from acct_mail_settings ;
+update acct_mail_settings set username='hivemanager' where id=0 ;
+</code>
+Previously you must enter an invalid email address on the console if you want to update the password.
+
+===== tomcat =====
+The main application (nginx branch ''/hm-webapp/services/acct/'') run on ''tomcat_instance1'' (port 8080).
